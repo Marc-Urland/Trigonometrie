@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trigonometrie – Stationen-Lernen</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; }
+</style>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, createElement } = React;
+
+
+
+const C = {
+  bg: "#F7F5F0", primary: "#2D5A7B", primaryLight: "#3A7CA5",
+  accent: "#E8A838", success: "#3DAA6D", error: "#D94C4C",
+  text: "#2C2C2C", textMuted: "#6B7280", border: "#E5E1D8", highlight: "#FFF8E7",
+  tipBg: "#EEF6FF", shadow: "0 2px 16px rgba(0,0,0,0.06)", shadowHover: "0 4px 24px rgba(0,0,0,0.10)",
+};
+
+function RightTriangleSVG({ w = 360, h = 240, highlightSide = null, animated = false }) {
+  const Ax = 40, Ay = 200, Bx = 270, By = 200, Cx = 270, Cy = 50;
+  const sc = (s) => s === highlightSide ? C.accent : C.primary;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <polygon points={`${Ax},${Ay} ${Bx},${By} ${Cx},${Cy}`} 
+        fill={`${C.primary}08`} stroke={C.primary} strokeWidth="2.5" strokeLinejoin="round"
+        style={animated ? { strokeDasharray: 800, strokeDashoffset: 800, animation: "drawTri 1.5s ease forwards" } : {}} />
+      {/* Classic right angle: arc + dot */}
+      <path d={`M ${Bx - 18} ${By} A 18 18 0 0 1 ${Bx} ${By - 18}`} fill="none" stroke={C.textMuted} strokeWidth="1.8" />
+      <circle cx={Bx - 9} cy={By - 9} r="1.8" fill={C.textMuted} />
+      {/* Angle arc at A */}
+      <path d={`M ${Ax + 45} ${Ay} A 45 45 0 0 0 ${Ax + 32} ${Ay - 32}`} fill="none" stroke={C.accent} strokeWidth="2" />
+      <text x={Ax + 50} y={Ay - 14} fontSize="16" fontWeight="700" fill={C.accent}>α</text>
+      {/* Vertex labels */}
+      <text x={Ax - 10} y={Ay + 20} fontSize="15" fontWeight="700" fill={C.primary}>A</text>
+      <text x={Bx + 8} y={By + 20} fontSize="15" fontWeight="700" fill={C.primary}>B</text>
+      <text x={Cx + 8} y={Cy - 8} fontSize="15" fontWeight="700" fill={C.primary}>C</text>
+      {/* Side c – bottom */}
+      <text x={(Ax + Bx) / 2} y={Ay + 22} textAnchor="middle" fontSize="14" fontWeight="600" fill={sc("c")}>c (Ankathete)</text>
+      {/* Side a – right vertical */}
+      <text x={Bx + 10} y={(By + Cy) / 2 + 5} fontSize="14" fontWeight="600" fill={sc("a")}>a (Gegenkathete)</text>
+      {/* Side b – hypotenuse */}
+      <text x={(Ax + Cx) / 2 - 32} y={(Ay + Cy) / 2} textAnchor="middle" fontSize="14" fontWeight="600" fill={sc("b")}
+        transform={`rotate(-33, ${(Ax + Cx) / 2 - 32}, ${(Ay + Cy) / 2})`}>b (Hypotenuse)</text>
+      <style>{`@keyframes drawTri{to{stroke-dashoffset:0}}`}</style>
+    </svg>
+  );
+}
+
+// Helper: Render a fraction inline (numerator over denominator)
+function Frac({ top, bot, color = "#000" }) {
+  return (
+    <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 4px", fontWeight: 700, color }}>
+      <span style={{ borderBottom: `1.5px solid ${color}`, padding: "0 6px", lineHeight: 1.3 }}>{top}</span>
+      <span style={{ padding: "0 6px", lineHeight: 1.3 }}>{bot}</span>
+    </span>
+  );
+}
+
+function RoofSVG() {
+  const ax=40,ay=190,bx=400,by=190,cx=305,cy=50;
+  return (
+    <svg width={440} height={260} viewBox="0 0 440 260">
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8D8F0"/><stop offset="100%" stopColor="#E8F0F8"/></linearGradient></defs>
+      <rect width={440} height={260} fill="url(#sky)" rx="8"/>
+      <rect x="50" y={ay} width="340" height="55" fill="#D4B896" stroke="#A0845E" strokeWidth="1.5"/>
+      <rect x="180" y={ay+10} width="50" height="45" fill="#7BA3C4" stroke="#5A8AAF" strokeWidth="1"/>
+      <polygon points={`${ax},${ay} ${cx},${cy} ${bx},${by}`} fill="rgba(200,220,240,0.25)" stroke={C.primary} strokeWidth="2.5"/>
+      <line x1={ax} y1={ay} x2={cx} y2={cy} stroke="#C0392B" strokeWidth="2.5"/>
+      <line x1={bx} y1={by} x2={cx} y2={cy} stroke="#2980B9" strokeWidth="2.5"/>
+      <text x={ax-8} y={ay+18} fontSize="13" fontWeight="700" fill={C.primary}>A</text>
+      <text x={bx+4} y={by+18} fontSize="13" fontWeight="700" fill={C.primary}>B</text>
+      <text x={cx+6} y={cy-6} fontSize="13" fontWeight="700" fill={C.primary}>C</text>
+      <text x={(bx+cx)/2+12} y={(by+cy)/2+2} fontSize="13" fontWeight="700" fill="#2980B9" transform={`rotate(-55,${(bx+cx)/2+12},${(by+cy)/2+2})`}>a = 6,60 m</text>
+      <text x={(ax+cx)/2-22} y={(ay+cy)/2+2} fontSize="13" fontWeight="700" fill="#C0392B" transform={`rotate(-28,${(ax+cx)/2-22},${(ay+cy)/2+2})`}>b = ?</text>
+      <text x={(ax+bx)/2} y={ay+18} fontSize="12" fontWeight="600" fill={C.textMuted} textAnchor="middle">c</text>
+      <path d={`M${ax+45} ${ay} A45 45 0 0 0 ${ax+38} ${ay-22}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={ax+52} y={ay-8} fontSize="14" fontWeight="700" fill={C.accent}>α = 38,5°</text>
+      <path d={`M${bx-40} ${by} A40 40 0 0 1 ${bx-22} ${by-30}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={bx-82} y={by-14} fontSize="14" fontWeight="700" fill={C.accent}>β = 60,2°</text>
+    </svg>
+  );
+}
+
+function SailSVG({ showHeight=false }) {
+  const mt=45,mb=245,mx=220,lx=175,rx=370,by=mb;
+  return (
+    <svg width={420} height={320} viewBox="0 0 420 320">
+      <defs><linearGradient id="w2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#2980B9"/><stop offset="100%" stopColor="#3498DB"/></linearGradient></defs>
+      <rect width={420} height={320} fill="#E8F4FD" rx="8"/>
+      <ellipse cx={210} cy={300} rx={200} ry="18" fill="url(#w2)" opacity="0.2"/>
+      {/* Boat hull */}
+      <path d={`M${mx-55} ${by+10} Q${mx-50} ${by+35} ${mx} ${by+38} Q${mx+50} ${by+35} ${mx+55} ${by+10}Z`} fill="#8B5E3C" stroke="#6B4226" strokeWidth="1.5"/>
+      {/* Small mast – connects boat to sail */}
+      <line x1={mx} y1={by} x2={mx} y2={by+10} stroke="#5D4E37" strokeWidth="4"/>
+      {/* Single triangular sail (uniform yellow) */}
+      <polygon points={`${lx},${by} ${mx},${mt} ${rx},${by}`} fill="#F5E6D3" stroke={C.primary} strokeWidth="2.5" fillOpacity="0.85"/>
+      {/* Optional height line (toggled) */}
+      {showHeight && <>
+        <line x1={mx} y1={mt} x2={mx} y2={by} stroke={C.accent} strokeWidth="2" strokeDasharray="5,3"/>
+        <path d={`M ${mx-12} ${by} A 12 12 0 0 1 ${mx} ${by-12}`} fill="none" stroke={C.textMuted} strokeWidth="1.5"/>
+        <circle cx={mx-6} cy={by-6} r="1.5" fill={C.textMuted}/>
+        <text x={mx-16} y={by+18} fontSize="13" fontWeight="700" fill={C.primary}>D</text>
+        <text x={mx+10} y={(mt+by)/2} fontSize="13" fontWeight="700" fill={C.accent}>h</text>
+      </>}
+      {/* Side labels */}
+      <text x={(lx+mx)/2-18} y={(by+mt)/2+10} fontSize="13" fontWeight="700" fill="#C0392B" transform={`rotate(-77,${(lx+mx)/2-18},${(by+mt)/2+10})`}>b = ?</text>
+      <text x={(rx+mx)/2+12} y={(by+mt)/2} fontSize="13" fontWeight="700" fill="#2980B9" transform={`rotate(53,${(rx+mx)/2+12},${(by+mt)/2})`}>a = 7,50 m</text>
+      <text x={(lx+rx)/2+10} y={by+18} fontSize="12" fontWeight="600" fill={C.textMuted} textAnchor="middle">c</text>
+      {/* Points */}
+      <text x={lx-14} y={by+5} fontSize="13" fontWeight="700" fill={C.primary}>A</text>
+      <text x={rx+6} y={by+5} fontSize="13" fontWeight="700" fill={C.primary}>B</text>
+      <text x={mx+8} y={mt-10} fontSize="13" fontWeight="700" fill={C.primary}>C</text>
+      {/* α at A (left) */}
+      <path d={`M${lx+20} ${by} A20 20 0 0 0 ${lx+10} ${by-18}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={lx-8} y={by-18} fontSize="14" fontWeight="700" fill={C.accent}>α = 65°</text>
+      {/* β at B (right) */}
+      <path d={`M${rx-35} ${by} A35 35 0 0 1 ${rx-22} ${by-26}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={rx-68} y={by-10} fontSize="14" fontWeight="700" fill={C.accent}>β = 38,5°</text>
+    </svg>
+  );
+}
+
+function KiteSVG({ showHeight=false }) {
+  const aX=210,aY=30,bX=310,bY=165,cX=210,cY=350,dX=110,dY=165,mX=210,mY=165;
+  // Compute vectors from A to AB and AD to draw arc touching sides
+  const abDx=bX-aX, abDy=bY-aY, adDx=dX-aX, adDy=dY-aY;
+  const abLen=Math.sqrt(abDx*abDx+abDy*abDy), adLen=Math.sqrt(adDx*adDx+adDy*adDy);
+  const r=35;
+  const abNx=abDx/abLen*r, abNy=abDy/abLen*r, adNx=adDx/adLen*r, adNy=adDy/adLen*r;
+  return (
+    <svg width={420} height={400} viewBox="0 0 420 400">
+      <rect width={420} height={400} fill="#F0F7FF" rx="8"/>
+      <polygon points={`${aX},${aY} ${bX},${bY} ${cX},${cY} ${dX},${dY}`} fill="#FFE0B2" stroke={C.primary} strokeWidth="2.5" fillOpacity="0.7"/>
+      {/* Diagonal AC green – single piece */}
+      <line x1={aX} y1={aY} x2={cX} y2={cY} stroke="#27AE60" strokeWidth="2" strokeDasharray="6,3"/>
+      {/* BD only when toggled */}
+      {showHeight && <>
+        <line x1={dX} y1={dY} x2={bX} y2={bY} stroke="#8E44AD" strokeWidth="2" strokeDasharray="6,3"/>
+        <rect x={mX} y={mY-10} width="10" height="10" fill="none" stroke={C.textMuted} strokeWidth="1.2"/>
+        <text x={mX-18} y={mY+20} fontSize="12" fontWeight="600" fill={C.textMuted}>M</text>
+      </>}
+      {/* AC label – single */}
+      <text x={aX-55} y={(aY+cY)/2+5} fontSize="13" fontWeight="600" fill="#27AE60">AC = 5,40 m</text>
+      {/* AB side label */}
+      <text x={(aX+bX)/2+14} y={(aY+bY)/2-8} fontSize="13" fontWeight="700" fill={C.primary} transform={`rotate(53,${(aX+bX)/2+14},${(aY+bY)/2-8})`}>AB = 2,71 m</text>
+      {/* Point labels */}
+      <text x={aX+10} y={aY+5} fontSize="14" fontWeight="700" fill={C.primary}>A</text>
+      <text x={bX+10} y={bY+5} fontSize="14" fontWeight="700" fill={C.primary}>B</text>
+      <text x={cX+10} y={cY+5} fontSize="14" fontWeight="700" fill={C.primary}>C</text>
+      <text x={dX-22} y={dY+5} fontSize="14" fontWeight="700" fill={C.primary}>D</text>
+      {/* α at A – arc curving downward between sides AB and AD */}
+      <path d={`M${aX+abNx},${aY+abNy} A${r} ${r} 0 0 1 ${aX+adNx},${aY+adNy}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={aX-55} y={aY+52} fontSize="13" fontWeight="700" fill={C.accent}>α = 64°</text>
+      {/* β at B – label only, no arc */}
+      <text x={bX+10} y={bY+22} fontSize="13" fontWeight="700" fill={C.accent}>β = ?</text>
+      {/* BD = ? */}
+      <text x={dX-24} y={dY+24} fontSize="12" fontWeight="600" fill="#8E44AD">BD = ?</text>
+      {/* Tail */}
+      <path d={`M${cX},${cY} Q${cX-5},${cY+18} ${cX+5},${cY+28} Q${cX-3},${cY+35} ${cX+3},${cY+42}`} fill="none" stroke={C.primary} strokeWidth="1.5"/>
+    </svg>
+  );
+}
+
+function BridgeSVG({ showHeight=false }) {
+  const ax=30,bx=410,baseY=155,cx=(ax+bx)/2,cy=40;
+  return (
+    <svg width={440} height={240} viewBox="0 0 440 240">
+      <rect width={440} height={240} fill="#F5F0E8" rx="8"/>
+      <rect x={ax} y={baseY} width={bx-ax} height="12" fill="#8B7355" rx="2"/>
+      <polygon points={`${ax},${baseY} ${cx},${cy} ${bx},${baseY}`} fill="rgba(200,220,240,0.15)" stroke={C.primary} strokeWidth="2.5"/>
+      <line x1={ax} y1={baseY} x2={cx} y2={cy} stroke="#C0392B" strokeWidth="2.5"/>
+      <line x1={bx} y1={baseY} x2={cx} y2={cy} stroke="#2980B9" strokeWidth="2.5"/>
+      {showHeight && <>
+        <line x1={cx} y1={baseY} x2={cx} y2={cy} stroke={C.accent} strokeWidth="2" strokeDasharray="5,3"/>
+        <rect x={cx-10} y={baseY-10} width="10" height="10" fill="none" stroke={C.textMuted} strokeWidth="1.2"/>
+        <text x={cx+6} y={baseY-16} fontSize="13" fontWeight="700" fill={C.primary}>D</text>
+        <text x={cx+14} y={(cy+baseY)/2+4} fontSize="13" fontWeight="700" fill={C.accent}>h</text>
+      </>}
+      <rect x={ax-4} y={baseY} width="12" height="50" fill="#6B5B4A"/>
+      <rect x={bx-8} y={baseY} width="12" height="50" fill="#6B5B4A"/>
+      <path d={`M0,210 Q55,200 110,210 Q165,220 220,210 Q330,200 365,210 Q400,215 440,210 L440,240 L0,240Z`} fill="#5DADE2" opacity="0.2"/>
+      <text x={ax-8} y={baseY-6} fontSize="13" fontWeight="700" fill={C.primary}>A</text>
+      <text x={bx+4} y={baseY-6} fontSize="13" fontWeight="700" fill={C.primary}>B</text>
+      <text x={cx+8} y={cy-6} fontSize="13" fontWeight="700" fill={C.primary}>C</text>
+      <text x={(ax+cx)/2-24} y={(baseY+cy)/2+2} fontSize="13" fontWeight="700" fill="#C0392B" transform={`rotate(-31,${(ax+cx)/2-24},${(baseY+cy)/2+2})`}>b = ?</text>
+      <text x={(bx+cx)/2+16} y={(baseY+cy)/2+2} fontSize="13" fontWeight="700" fill="#2980B9" transform={`rotate(31,${(bx+cx)/2+16},${(baseY+cy)/2+2})`}>a = ?</text>
+      <text x={cx} y={baseY+28} fontSize="13" fontWeight="600" fill={C.textMuted} textAnchor="middle">c = 18 m</text>
+      <path d={`M${ax+45} ${baseY} A45 45 0 0 0 ${ax+35} ${baseY-25}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={ax+50} y={baseY-10} fontSize="14" fontWeight="700" fill={C.accent}>α = 55°</text>
+      <path d={`M${bx-45} ${baseY} A45 45 0 0 1 ${bx-35} ${baseY-25}`} fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x={bx-95} y={baseY-10} fontSize="14" fontWeight="700" fill={C.accent}>β = 55°</text>
+    </svg>
+  );
+}
+
+function ParaSVGComp({ showHeight=false }) {
+  return (
+    <svg width={380} height={220} viewBox="0 0 380 220">
+      <rect width="380" height="220" fill="#F8F5FF" rx="8"/>
+      <polygon points="80,170 170,50 340,50 250,170" fill="#E8D5F5" fillOpacity="0.4" stroke={C.primary} strokeWidth="2.5"/>
+      {showHeight && <>
+        <line x1="170" y1="50" x2="170" y2="170" stroke={C.accent} strokeWidth="2" strokeDasharray="5,3"/>
+        <rect x="165" y="160" width="10" height="10" fill="none" stroke={C.textMuted} strokeWidth="1"/>
+        <text x="175" y="115" fontSize="13" fontWeight="600" fill={C.accent}>h</text>
+      </>}
+      <text x="200" y="188" fontSize="14" fontWeight="600" fill={C.primary}>a = 12 m</text>
+      <text x="105" y="115" fontSize="14" fontWeight="600" fill="#8E44AD" transform="rotate(-53,105,115)">b = 7,2 m</text>
+      {/* Angle arc at A for 50° */}
+      <path d="M115,170 A35 35 0 0 0 102,145" fill="none" stroke={C.accent} strokeWidth="2"/>
+      <text x="92" y="182" fontSize="14" fontWeight="700" fill={C.accent}>50°</text>
+      <text x="62" y="178" fontSize="12" fill={C.primary}>A</text>
+      <text x="158" y="45" fontSize="12" fill={C.primary}>D</text>
+      <text x="345" y="55" fontSize="12" fill={C.primary}>C</text>
+      <text x="255" y="185" fontSize="12" fill={C.primary}>B</text>
+    </svg>
+  );
+}
+
+const round2=(n)=>Math.round(n*100)/100;
+const degToRad=(d)=>(d*Math.PI)/180;
+const checkAnswer=(input,correct,tolerance=0.15)=>{const v=parseFloat(String(input).replace(",","."));if(isNaN(v))return null;return Math.abs(v-correct)<=tolerance;};
+
+// ─── Station 0 ───
+function StationReminder() {
+  const [activeTab,setActiveTab]=useState("sin");
+  const [qa,setQa]=useState({});
+  const [showR,setShowR]=useState(false);
+  const tabs=[
+    {id:"sin",label:"Sinus",color:"#E74C3C",frac:<Frac top="a" bot="b" color="#E74C3C"/>,desc:<>Der Sinus eines Winkels beschreibt das Verhältnis der <strong>Gegenkathete</strong> zur <strong>Hypotenuse</strong>: <Frac top="Gegenkathete" bot="Hypotenuse" color="#E74C3C"/></>},
+    {id:"cos",label:"Kosinus",color:"#2980B9",frac:<Frac top="c" bot="b" color="#2980B9"/>,desc:<>Der Kosinus eines Winkels beschreibt das Verhältnis der <strong>Ankathete</strong> zur <strong>Hypotenuse</strong>: <Frac top="Ankathete" bot="Hypotenuse" color="#2980B9"/></>},
+    {id:"tan",label:"Tangens",color:"#27AE60",frac:<Frac top="a" bot="c" color="#27AE60"/>,desc:<>Der Tangens eines Winkels beschreibt das Verhältnis der <strong>Gegenkathete</strong> zur <strong>Ankathete</strong>: <Frac top="Gegenkathete" bot="Ankathete" color="#27AE60"/></>},
+  ];
+  const qq=[
+    {q:"α = 35°, Hypotenuse b = 10 cm. Gegenkathete a = ?",a:round2(10*Math.sin(degToRad(35))),u:"cm",h:"sin(α) = a/b → a = b·sin(α)"},
+    {q:"α = 50°, Ankathete c = 6 cm. Hypotenuse b = ?",a:round2(6/Math.cos(degToRad(50))),u:"cm",h:"cos(α) = c/b → b = c/cos(α)"},
+    {q:"Gegenkathete a = 8 cm, Ankathete c = 5 cm. α = ?",a:round2(Math.atan(8/5)*180/Math.PI),u:"°",h:"tan(α) = a/c → α = arctan(a/c)"},
+  ];
+  const ac=tabs.find(t=>t.id===activeTab);
+  return (
+    <div>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:14,color:C.accent,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>Station 0</div>
+        <h2 style={{fontSize:26,color:C.primary,margin:0,fontFamily:"'Playfair Display',Georgia,serif"}}>Wiederholung: Sinus, Kosinus & Tangens</h2>
+        <p style={{color:C.textMuted,marginTop:8,fontSize:15}}>Willkommen zurück! Frische dein Wissen auf.</p>
+      </div>
+      <div style={{display:"flex",justifyContent:"center",marginBottom:24}}><RightTriangleSVG animated highlightSide={activeTab==="sin"?"a":activeTab==="cos"?"c":null}/></div>
+      <div style={{display:"flex",gap:8,marginBottom:20,justifyContent:"center"}}>
+        {tabs.map(t=>(<button key={t.id} onClick={()=>setActiveTab(t.id)} style={{padding:"10px 24px",border:"2px solid",borderRadius:10,borderColor:activeTab===t.id?t.color:C.border,background:activeTab===t.id?t.color:"white",color:activeTab===t.id?"white":C.text,fontWeight:700,fontSize:15,cursor:"pointer",transition:"all 0.25s",transform:activeTab===t.id?"scale(1.05)":"scale(1)"}}>{t.label}</button>))}
+      </div>
+      <div style={{background:`linear-gradient(135deg,${ac.color}11,${ac.color}22)`,border:`2px solid ${ac.color}44`,borderRadius:16,padding:24,marginBottom:24}}>
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:8,fontSize:22,fontWeight:800,color:ac.color,fontFamily:"Georgia,serif",marginBottom:12}}>
+          <span>{activeTab}(α) =</span>{ac.frac}
+        </div>
+        <div style={{textAlign:"center",fontSize:14,color:C.text,lineHeight:1.8}}>{ac.desc}</div>
+      </div>
+      <div style={{background:"white",borderRadius:14,padding:22,border:`1px solid ${C.border}`}}>
+        <h3 style={{fontSize:18,color:C.primary,margin:"0 0 16px",fontFamily:"'Playfair Display',Georgia,serif"}}>⚡ Schnell-Check</h3>
+        {qq.map((q,i)=>{const r2=showR?checkAnswer(qa[i],q.a):null;return(<div key={i} style={{marginBottom:18,padding:16,background:r2===true?"#E8F8EE":r2===false?"#FDE8E8":"#FAFAF7",borderRadius:10,border:`1px solid ${r2===true?C.success:r2===false?C.error:C.border}44`}}>
+          <div style={{fontSize:14,color:C.text,marginBottom:10,lineHeight:1.6}}>{q.q}</div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}><input type="text" placeholder="?" value={qa[i]||""} onChange={e=>{setQa({...qa,[i]:e.target.value});setShowR(false);}} style={{flex:1,padding:"9px 14px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:14,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.primaryLight} onBlur={e=>e.target.style.borderColor=C.border}/><span style={{fontSize:14,fontWeight:600,color:C.textMuted}}>{q.u}</span></div>
+          {r2===true&&<div style={{marginTop:8,fontSize:13,color:C.success,fontWeight:600}}>✓ Richtig! (≈{q.a} {q.u})</div>}
+          {r2===false&&<div style={{marginTop:8,fontSize:13,color:C.error}}>✗ Tipp: {q.h}</div>}
+        </div>);})}
+        <button onClick={()=>setShowR(true)} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"white",fontWeight:700,fontSize:15,cursor:"pointer",boxShadow:C.shadow}}>Antworten überprüfen</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── StationTask with sketch-first flow ───
+function StationTask({title,stationNum,description,tasksText,svgRender,fields,hints,onCheck,results,extraContent,hasHeightToggle=true}) {
+  const [values,setValues]=useState({});
+  const [checked,setChecked]=useState(false);
+  const [showHints,setShowHints]=useState(false);
+  const [hintStep,setHintStep]=useState(0);
+  const [showHeight,setShowHeight]=useState(false);
+  const [cooldown,setCooldown]=useState(0);
+  const [heightDelay,setHeightDelay]=useState(180); // 3 minutes = 180s
+  const [sketchDone,setSketchDone]=useState(!hasHeightToggle); // Station 1 has no toggle, auto-unlocked
+
+  useEffect(()=>{if(cooldown<=0)return;const t=setTimeout(()=>setCooldown(cooldown-1),1000);return()=>clearTimeout(t);},[cooldown]);
+  useEffect(()=>{if(heightDelay<=0)return;const t=setTimeout(()=>setHeightDelay(heightDelay-1),1000);return()=>clearTimeout(t);},[heightDelay]);
+
+  const handleChange=(key,val)=>{setValues({...values,[key]:val});setChecked(false);};
+  const doCheck=()=>{onCheck(values);setChecked(true);};
+  const nextHint=()=>{if(cooldown>0)return;setHintStep(hintStep+1);setCooldown(90);};
+  const allCorrect=checked&&results&&Object.values(results).every(r=>r===true);
+  const heightReady=heightDelay<=0;
+  const mm=Math.floor(heightDelay/60),ss=heightDelay%60;
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <div style={{fontSize:14,color:C.accent,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>Station {stationNum}</div>
+        <h2 style={{fontSize:24,color:C.primary,margin:0,fontFamily:"'Playfair Display',Georgia,serif"}}>{title}</h2>
+      </div>
+
+      {/* Block 1: Description + Gegeben */}
+      <div style={{background:"#FAFAF7",borderRadius:14,padding:20,marginBottom:20,lineHeight:1.7,fontSize:14,color:C.text,border:`1px solid ${C.border}`}}>{description}</div>
+
+      {/* Block 2: Aufgabe 0 + SVG + Height toggle */}
+      {hasHeightToggle && (
+        <div style={{background:`${C.primary}08`,borderRadius:12,padding:16,marginBottom:16,border:`1px solid ${C.primary}22`}}>
+          <div style={{fontSize:14,fontWeight:600,color:C.primary,marginBottom:4}}>✏️ Aufgabe 0: Skizze anfertigen</div>
+          <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Übertrage die Grafik in dein Heft oder Goodnotes (Screenshot) und zeichne eine sinnvolle Hilfslinie ein, mit der rechtwinklige Teildreiecke entstehen. Überprüfe anschließend deine Idee mit dem Button unten.</div>
+        </div>
+      )}
+
+      <div style={{display:"flex",justifyContent:"center",marginBottom:8,overflow:"auto"}}>{svgRender(showHeight)}</div>
+
+      {hasHeightToggle && (
+        <div style={{textAlign:"center",marginBottom:12}}>
+          <button onClick={()=>{if(heightReady)setShowHeight(!showHeight);}} disabled={!heightReady&&!showHeight}
+            style={{padding:"8px 18px",borderRadius:8,border:`2px solid ${showHeight?C.success:heightReady?C.primary:"#CCC"}44`,background:showHeight?`${C.success}15`:heightReady?"white":"#F8F8F8",color:showHeight?C.success:heightReady?C.primary:C.textMuted,fontWeight:600,fontSize:13,cursor:heightReady||showHeight?"pointer":"default",transition:"all 0.2s"}}>
+            {showHeight?"✓ Hilfslinie ausblenden":heightReady?"📏 Hilfslinie einblenden":`⏳ Hilfslinie in ${mm}:${ss<10?"0":""}${ss} verfügbar`}
+          </button>
+        </div>
+      )}
+
+      {/* "Skizze fertig" button – unlocks tasks */}
+      {hasHeightToggle && !sketchDone && (
+        <div style={{textAlign:"center",marginTop:12,marginBottom:24}}>
+          <button onClick={()=>setSketchDone(true)}
+            style={{padding:"14px 32px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${C.accent},${C.accentDark || "#D4922A"})`,color:"white",fontWeight:700,fontSize:16,cursor:"pointer",boxShadow:C.shadow,transition:"transform 0.15s"}}
+            onMouseDown={e=>e.target.style.transform="scale(0.97)"}
+            onMouseUp={e=>e.target.style.transform="scale(1)"}>
+            ✅ Skizze fertig – weiter zu den Aufgaben
+          </button>
+        </div>
+      )}
+
+      {/* Block 3: Tasks + Input fields – only shown after sketch is done */}
+      {sketchDone && (<>
+        {/* Tasks description */}
+        {tasksText && (
+          <div style={{background:"#FAFAF7",borderRadius:14,padding:20,marginBottom:20,lineHeight:1.7,fontSize:14,color:C.text,border:`1px solid ${C.border}`,animation:"fadeIn 0.5s ease"}}>
+            <div style={{marginBottom:14,paddingBottom:14,borderBottom:`1px dashed ${C.border}`,fontSize:13,color:C.textMuted,fontStyle:"italic"}}>📝 Halte deine Rechnungen schriftlich in deinem Heft oder in Goodnotes fest und bearbeite sie nach dem zuvor besprochenen Schema – so können wir sie anschließend gemeinsam besprechen und präsentieren.</div>
+            {tasksText}
+          </div>
+        )}
+
+        {/* Input fields */}
+        <div style={{display:"grid",gap:14,marginBottom:20,animation:"fadeIn 0.5s ease"}}>
+          {fields.map(f=>{const res=checked&&results?results[f.key]:null;return(<div key={f.key} style={{background:res===true?"#E8F8EE":res===false?"#FDE8E8":"white",borderRadius:12,padding:16,border:`1.5px solid ${res===true?C.success:res===false?C.error:C.border}`,transition:"all 0.3s"}}>
+            <label style={{fontSize:14,fontWeight:600,color:C.text,display:"block",marginBottom:8}}>{f.label}</label>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <input type="text" placeholder="?" value={values[f.key]||""} onChange={e=>handleChange(f.key,e.target.value)} style={{flex:1,padding:"10px 14px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:15,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.primaryLight} onBlur={e=>e.target.style.borderColor=C.border}/>
+              <span style={{fontSize:14,fontWeight:600,color:C.textMuted,minWidth:24}}>{f.unit}</span>
+            </div>
+            {res===true&&<div style={{marginTop:6,fontSize:13,color:C.success,fontWeight:600}}>✓ Richtig!</div>}
+            {res===false&&<div style={{marginTop:6,fontSize:13,color:C.error}}>✗ Überprüfe deine Berechnung. {f.hint&&`Tipp: ${f.hint}`}</div>}
+          </div>);})}
+        </div>
+
+        {/* Check + Hints buttons */}
+        <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}}>
+          <button onClick={doCheck} style={{flex:1,padding:"13px",borderRadius:10,border:"none",minWidth:180,background:`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"white",fontWeight:700,fontSize:15,cursor:"pointer",boxShadow:C.shadow}}>✔ Überprüfen</button>
+          {hints&&hints.length>0&&<button onClick={()=>{setShowHints(!showHints);if(!showHints){setHintStep(0);setCooldown(0);}}} style={{flex:1,padding:"13px",borderRadius:10,border:`2px solid ${C.accent}`,minWidth:140,background:showHints?C.accent:"white",color:showHints?"white":C.accent,fontWeight:700,fontSize:15,cursor:"pointer",transition:"all 0.2s"}}>{showHints?"Tipps ausblenden":"💡 Tipps anzeigen"}</button>}
+        </div>
+
+        {showHints&&hints&&hints.length>0&&(
+          <div style={{background:C.tipBg,borderRadius:14,padding:20,marginBottom:20,border:`1px solid ${C.primary}33`}}>
+            <div style={{fontWeight:700,fontSize:15,color:C.primary,marginBottom:12}}>💡 Schritt-für-Schritt Tipps</div>
+            {hints.slice(0,hintStep+1).map((h,i)=>(<div key={i} style={{background:"white",borderRadius:10,padding:14,marginBottom:8,border:`1px solid ${C.primary}22`,fontSize:14,color:C.text,lineHeight:1.6,animation:"fadeIn 0.4s ease"}}><span style={{fontWeight:700,color:C.accent,marginRight:8}}>Tipp {i+1}:</span>{h}</div>))}
+            {hintStep<hints.length-1&&(<button onClick={nextHint} disabled={cooldown>0} style={{marginTop:6,padding:"8px 18px",borderRadius:8,border:`1px solid ${cooldown>0?C.border:C.primary}44`,background:cooldown>0?"#F5F5F5":"white",color:cooldown>0?C.textMuted:C.primary,fontWeight:600,fontSize:13,cursor:cooldown>0?"default":"pointer"}}>{cooldown>0?`⏳ Nächster Tipp in ${cooldown}s`:"Nächsten Tipp anzeigen →"}</button>)}
+          </div>
+        )}
+        {extraContent}
+        {allCorrect&&(<div style={{background:`linear-gradient(135deg,${C.success}15,${C.success}25)`,borderRadius:14,padding:20,textAlign:"center",border:`2px solid ${C.success}44`,animation:"fadeIn 0.5s ease"}}><div style={{fontSize:32,marginBottom:8}}>🎉</div><div style={{fontSize:18,fontWeight:700,color:C.success}}>Ausgezeichnet!</div><div style={{fontSize:14,color:C.text,marginTop:4}}>Alle Antworten sind richtig!</div></div>)}
+      </>)}
+
+      <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
+    </div>
+  );
+}
+
+// ─── Station 1 ───
+function Station1() {
+  const [results,setResults]=useState(null);
+  const a=6.60,alpha=38.5,beta=60.2;
+  const h=round2(a*Math.sin(degToRad(beta)));
+  const b=round2(h/Math.sin(degToRad(alpha)));
+  return (
+    <StationTask stationNum={1} title="Dachkonstruktion" hasHeightToggle={false}
+      description={<>Bei einem Dach sind zwei Winkel und die Länge einer Dachseite bekannt. Die Dachspitze liegt nicht mittig.<br/><br/><strong>Gegeben:</strong> α = 38,5° (bei A), β = 60,2° (bei B), rechte Dachseite a = 6,60 m.<br/><br/><strong>Aufgabe:</strong> Versuche die linke Dachseite b zu berechnen.<br/><br/><span style={{fontStyle:"italic",color:C.textMuted}}>📝 Halte deine Ideen und dein Vorgehen schriftlich in deinem Heft oder in Goodnotes fest, sodass wir das anschließend gemeinsam besprechen können.</span></>}
+      svgRender={()=><RoofSVG/>}
+      fields={[{key:"b",label:"Linke Dachseite b",unit:"m",hint:"Überlege: Wo ist der rechte Winkel?"}]}
+      hints={null}
+      onCheck={v=>{setResults({b:checkAnswer(v.b,b)});}} results={results}
+    />
+  );
+}
+
+// ─── Station 2: α at A, β at B ───
+function Station2() {
+  const [results,setResults]=useState(null);
+  // α=65° at A (left), β=38.5° at B (right), a=7.50m (B→C)
+  const a=7.50, alphaA=65, betaB=38.5;
+  const h=round2(a*Math.sin(degToRad(betaB)));
+  const b=round2(h/Math.sin(degToRad(alphaA)));
+  const pLeft=round2(h/Math.tan(degToRad(alphaA)));
+  const pRight=round2(a*Math.cos(degToRad(betaB)));
+  const cBase=round2(pLeft+pRight);
+  const area=round2(0.5*cBase*h);
+  return (
+    <StationTask stationNum={2} title="Segelkonstruktion"
+      description={<>Ein Segelboot hat ein dreieckiges Segel ABC mit der Spitze C oben.<br/><br/><strong>Gegeben:</strong> Winkel α = 65° (bei A, links), Winkel β = 38,5° (bei B, rechts), rechte Segelseite a = 7,50 m (B → C).</>}
+      tasksText={<><strong>Aufgabe 1:</strong> Berechne die Höhe h des Segels.<br/><strong>Aufgabe 2:</strong> Berechne die Länge der linken Segelseite b (von A nach C).<br/><strong>Aufgabe 3:</strong> Berechne die gesamte Breite c der Unterkante (von A bis B).<br/><strong>Aufgabe 4:</strong> Berechne den Flächeninhalt des Segels.</>}
+      svgRender={sh=><SailSVG showHeight={sh}/>}
+      fields={[
+        {key:"h",label:"Aufgabe 1: Höhe h des Segels",unit:"m",hint:"Welches Seitenverhältnis liefert h?"},
+        {key:"b",label:"Aufgabe 2: Linke Segelseite b",unit:"m",hint:"Nutze den Winkel α und h."},
+        {key:"c",label:"Aufgabe 3: Unterkante c",unit:"m",hint:"c = DA + DB"},
+        {key:"area",label:"Aufgabe 4: Flächeninhalt",unit:"m²",hint:"Dreiecksfläche."},
+      ]}
+      hints={[
+        "Der Mast teilt das Dreieck in zwei rechtwinklige Teildreiecke. Überlege, welche Seite jeweils die Hypotenuse ist.",
+        "Im rechten Teildreieck kennst du a und β. Welche Funktion liefert h?",
+        "Wenn du h kennst, nutze im linken Teildreieck den Winkel α um b zu bestimmen.",
+        "Berechne DA und DB einzeln und addiere sie für die Unterkante c.",
+      ]}
+      onCheck={v=>{setResults({h:checkAnswer(v.h,h),b:checkAnswer(v.b,b),c:checkAnswer(v.c,cBase,0.2),area:checkAnswer(v.area,area,0.4)});}} results={results}
+    />
+  );
+}
+
+// ─── Station 3 ───
+function Station3() {
+  const [results,setResults]=useState(null);
+  const AM=2.30,MC=3.10,alphaFull=64,halfAlpha=32;
+  const BM=round2(AM*Math.tan(degToRad(halfAlpha)));
+  const BD=round2(2*BM);
+  const angleBinABM=round2(Math.atan(AM/BM)*180/Math.PI);
+  const angleBinBCM=round2(Math.atan(MC/BM)*180/Math.PI);
+  const betaFull=round2(angleBinABM+angleBinBCM);
+  const sideAB=round2(AM/Math.cos(degToRad(halfAlpha)));
+  const AC=round2(AM+MC);
+  const area=round2((AC*BD)/2);
+  return (
+    <StationTask stationNum={3} title="Drachenkonstruktion"
+      description={<>Ein symmetrischer Drachen ABCD hat zwei Diagonalen: <span style={{color:"#27AE60",fontWeight:700}}>AC</span> (Symmetriediagonale, grün) und <span style={{color:"#8E44AD",fontWeight:700}}>BD</span> (lila), die senkrecht aufeinander stehen.<br/><br/><strong>Gegeben:</strong> Diagonale <span style={{color:"#27AE60",fontWeight:700}}>AC = 5,40 m</span>. Seite AB = 2,71 m. Winkel α = 64° an der Spitze A.</>}
+      tasksText={<><strong>Aufgabe 1:</strong> Berechne die Länge der Diagonale <span style={{color:"#8E44AD",fontWeight:700}}>BD</span>.<br/><strong>Aufgabe 2:</strong> Berechne den Winkel β an der Ecke B.<br/><strong>Aufgabe 3:</strong> Berechne den Flächeninhalt des Drachens.</>}
+      svgRender={sh => (<KiteSVG showHeight={sh}/>)}
+      fields={[
+        {key:"BD",label:"Aufgabe 1: Diagonale BD",unit:"m",hint:"Betrachte das Dreieck ABM."},
+        {key:"beta",label:"Aufgabe 2: Winkel β (Ecke B)",unit:"°",hint:"β besteht aus zwei Teilwinkeln."},
+        {key:"area",label:"Aufgabe 3: Flächeninhalt",unit:"m²",hint:"Nutze die Diagonalen."},
+      ]}
+      hints={[
+        "Überlege, welche vier rechtwinkligen Dreiecke durch die beiden Diagonalen entstehen.",
+        "Im Dreieck ABM kennst du α/2 und die Seite AB. Welche Funktion liefert BM?",
+        "Der Winkel β bei B setzt sich aus zwei Teilwinkeln zusammen – berechne beide einzeln.",
+      ]}
+      onCheck={v=>{setResults({BD:checkAnswer(v.BD,BD,0.15),beta:checkAnswer(v.beta,betaFull,0.8),area:checkAnswer(v.area,area,0.3)});}} results={results}
+    />
+  );
+}
+
+// ─── Station 4 ───
+function Station4() {
+  const [results,setResults]=useState(null);
+  const span=18,angle=55,d=9;
+  const hB=round2(d*Math.tan(degToRad(angle)));
+  const sideLen=round2(d/Math.cos(degToRad(angle)));
+  const areaB=round2(0.5*span*hB);
+  return (
+    <StationTask stationNum={4} title="Brückenkonstruktion"
+      description={<>Eine symmetrische Fußgängerbrücke mit zwei gleich langen Streben, die sich bei C treffen.<br/><br/><strong>Gegeben:</strong> Spannweite c = 18 m. α = β = 55°.</>}
+      tasksText={<><strong>Aufgabe 1:</strong> Berechne die Höhe h der Konstruktion (von C bis D).<br/><strong>Aufgabe 2:</strong> Berechne die Länge einer Strebe a (= b, da symmetrisch).<br/><strong>Aufgabe 3:</strong> Berechne den Flächeninhalt des Dreiecks ABC.</>}
+      svgRender={sh => (<BridgeSVG showHeight={sh}/>)}
+      fields={[
+        {key:"h",label:"Aufgabe 1: Höhe h",unit:"m",hint:"Wo liegt D bei symmetrischer Brücke?"},
+        {key:"side",label:"Aufgabe 2: Strebe a (= b)",unit:"m",hint:"Die Strebe ist die Hypotenuse."},
+        {key:"area",label:"Aufgabe 3: Flächeninhalt",unit:"m²",hint:"Grundseite × Höhe."},
+      ]}
+      hints={[
+        "Bei α = β liegt D genau in der Mitte. Wie lang ist AD?",
+        "Im rechtwinkligen Dreieck ADC: Welche Funktion liefert h, wenn du AD und α kennst?",
+        "Für die Strebe: Überlege ob sie Hypotenuse, An- oder Gegenkathete ist.",
+      ]}
+      onCheck={v=>{setResults({h:checkAnswer(v.h,hB,0.3),side:checkAnswer(v.side,sideLen,0.3),area:checkAnswer(v.area,areaB,0.5)});}} results={results}
+    />
+  );
+}
+
+// ─── Station 5: 50° ───
+function Station5() {
+  const [results,setResults]=useState(null);
+  const a=12,bSide=7.2,angleP=50;
+  const h=round2(bSide*Math.sin(degToRad(angleP)));
+  const area=round2(a*h);
+  const d=round2(bSide*Math.cos(degToRad(angleP)));
+  return (
+    <StationTask stationNum={5} title="Parallelogramm"
+      description={<>Bei einem Parallelogramm sind die Seitenlängen und ein Winkel bekannt.<br/><br/><strong>Gegeben:</strong> Seite a = 12 m, Seite b = 7,2 m, Innenwinkel α = 50°.</>}
+      tasksText={<><strong>Aufgabe 1:</strong> Berechne die Höhe h auf die Seite a.<br/><strong>Aufgabe 2:</strong> Berechne den Flächeninhalt des Parallelogramms.<br/><strong>Aufgabe 3:</strong> Berechne den Fußpunktabstand d.</>}
+      svgRender={sh => (<ParaSVGComp showHeight={sh}/>)}
+      fields={[
+        {key:"h",label:"Aufgabe 1: Höhe h",unit:"m",hint:"Welches Verhältnis hat h zu b?"},
+        {key:"area",label:"Aufgabe 2: Flächeninhalt",unit:"m²",hint:"Grundseite × Höhe."},
+        {key:"d",label:"Aufgabe 3: Fußpunktabstand d",unit:"m",hint:"Andere Funktion im selben Dreieck."},
+      ]}
+      hints={[
+        "Zeichne h senkrecht auf Seite a. Es entsteht ein rechtwinkliges Dreieck mit b als Hypotenuse.",
+        "Ist h die An- oder Gegenkathete bezüglich α? Welche Funktion brauchst du?",
+        "Für d: Nutze eine andere trigonometrische Funktion im selben Dreieck.",
+      ]}
+      onCheck={v=>{setResults({h:checkAnswer(v.h,h),area:checkAnswer(v.area,area,0.3),d:checkAnswer(v.d,d,0.2)});}} results={results}
+    />
+  );
+}
+
+// ─── Main ───
+function App() {
+  const [cur,setCur]=useState(null);
+  const [menu,setMenu]=useState(false);
+  const st=[
+    {id:0,label:"Wiederholung",icon:"📐",desc:"Sin, Cos & Tan auffrischen",color:"#6C5CE7"},
+    {id:1,label:"Dachkonstruktion",icon:"🏠",desc:"Warum geht das nicht direkt?",color:"#E17055"},
+    {id:2,label:"Segelkonstruktion",icon:"⛵",desc:"Segelseiten & Fläche berechnen",color:"#00B894"},
+    {id:3,label:"Drachen",icon:"🪁",desc:"Diagonalen & Winkel berechnen",color:"#FDCB6E"},
+    {id:4,label:"Brücke",icon:"🌉",desc:"Streben & Höhe berechnen",color:"#0984E3"},
+    {id:5,label:"Parallelogramm",icon:"▱",desc:"Höhe & Fläche berechnen",color:"#A29BFE"},
+  ];
+  const renderStation = () => {
+    switch (cur) {
+      case 0: return (<StationReminder />);
+      case 1: return (<Station1 />);
+      case 2: return (<Station2 />);
+      case 3: return (<Station3 />);
+      case 4: return (<Station4 />);
+      case 5: return (<Station5 />);
+      default: return null;
+    }
+  };
+
+  if(cur===null) return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',-apple-system,sans-serif"}}>
+      <div style={{background:`linear-gradient(135deg,${C.primary},#1A3A52)`,padding:"48px 24px 42px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
+        <div style={{fontSize:42,marginBottom:10}}>📐</div>
+        <h1 style={{fontSize:30,fontWeight:800,color:"white",margin:0,fontFamily:"'Playfair Display',Georgia,serif",lineHeight:1.2}}>Trigonometrie<br/>Stationen-Lernen</h1>
+        <p style={{color:"rgba(255,255,255,0.75)",fontSize:15,marginTop:12,maxWidth:380,marginInline:"auto",lineHeight:1.5}}>Sinus, Kosinus & Tangens bei nicht-rechtwinkligen Figuren anwenden</p>
+      </div>
+      <div style={{padding:"28px 16px 40px",maxWidth:520,marginInline:"auto"}}>
+        <div style={{display:"grid",gap:14}}>
+          {st.map(s=>(<button key={s.id} onClick={()=>setCur(s.id)} style={{display:"flex",alignItems:"center",gap:16,background:"white",border:`1.5px solid ${C.border}`,borderRadius:14,padding:"18px 20px",cursor:"pointer",boxShadow:C.shadow,transition:"all 0.2s",textAlign:"left",width:"100%"}} onMouseEnter={e=>{e.currentTarget.style.boxShadow=C.shadowHover;e.currentTarget.style.borderColor=s.color;e.currentTarget.style.transform="translateY(-2px)";}} onMouseLeave={e=>{e.currentTarget.style.boxShadow=C.shadow;e.currentTarget.style.borderColor=C.border;e.currentTarget.style.transform="translateY(0)";}}>
+            <div style={{width:52,height:52,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,background:`${s.color}18`,flexShrink:0}}>{s.icon}</div>
+            <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:s.color,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Station {s.id}</div><div style={{fontSize:17,fontWeight:700,color:C.text,marginBottom:3}}>{s.label}</div><div style={{fontSize:13,color:C.textMuted}}>{s.desc}</div></div>
+            <div style={{color:C.textMuted,fontSize:20,flexShrink:0}}>→</div>
+          </button>))}
+        </div>
+        <div style={{marginTop:28,padding:18,background:C.highlight,borderRadius:12,border:`1px solid ${C.accent}33`,fontSize:13,color:C.text,lineHeight:1.6,textAlign:"center"}}>💡 <strong>Tipp:</strong> Starte mit Station 0!</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Segoe UI',-apple-system,sans-serif"}}>
+      <div style={{background:"white",borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+        <button onClick={()=>setCur(null)} style={{background:"none",border:"none",fontSize:15,color:C.primary,fontWeight:600,cursor:"pointer"}}>← Übersicht</button>
+        <div style={{position:"relative"}}>
+          <button onClick={()=>setMenu(!menu)} style={{background:C.primary,color:"white",border:"none",borderRadius:8,padding:"8px 14px",fontSize:13,fontWeight:600,cursor:"pointer"}}>Station wechseln ▾</button>
+          {menu&&(<div style={{position:"absolute",top:"110%",right:0,background:"white",borderRadius:12,boxShadow:"0 8px 32px rgba(0,0,0,0.15)",border:`1px solid ${C.border}`,minWidth:220,zIndex:200,overflow:"hidden"}}>
+            {st.map(s=>(<button key={s.id} onClick={()=>{setCur(s.id);setMenu(false);}} style={{display:"block",width:"100%",textAlign:"left",padding:"12px 16px",border:"none",cursor:"pointer",background:cur===s.id?`${s.color}15`:"white",borderLeft:cur===s.id?`3px solid ${s.color}`:"3px solid transparent",fontSize:14,color:C.text,fontWeight:cur===s.id?700:400}} onMouseEnter={e=>e.target.style.background=`${s.color}10`} onMouseLeave={e=>e.target.style.background=cur===s.id?`${s.color}15`:"white"}>{s.icon} {s.id}: {s.label}</button>))}
+          </div>)}
+        </div>
+      </div>
+      <div style={{maxWidth:560,marginInline:"auto",padding:"24px 16px 60px"}}>{renderStation()}</div>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"white",borderTop:`1px solid ${C.border}`,padding:"10px 16px",display:"flex",justifyContent:"space-between",boxShadow:"0 -2px 8px rgba(0,0,0,0.04)"}}>
+        <button disabled={cur<=0} onClick={()=>setCur(cur-1)} style={{padding:"10px 20px",borderRadius:10,border:`1.5px solid ${C.border}`,background:cur<=0?"#F5F5F5":"white",color:cur<=0?"#CCC":C.primary,fontWeight:600,fontSize:14,cursor:cur<=0?"default":"pointer"}}>← Zurück</button>
+        <span style={{alignSelf:"center",fontSize:13,color:C.textMuted,fontWeight:600}}>{cur+1} / {st.length}</span>
+        <button disabled={cur>=st.length-1} onClick={()=>setCur(cur+1)} style={{padding:"10px 20px",borderRadius:10,border:"none",background:cur>=st.length-1?"#E0E0E0":`linear-gradient(135deg,${C.primary},${C.primaryLight})`,color:"white",fontWeight:600,fontSize:14,cursor:cur>=st.length-1?"default":"pointer"}}>Weiter →</button>
+      </div>
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(createElement(App));
+</script>
+</body>
+</html>
